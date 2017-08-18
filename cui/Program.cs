@@ -140,9 +140,12 @@ namespace SUKOAuto
             {
                 Chrome.FindElement(By.Id("identifierId")).SendKeys(Mail);
                 Chrome.FindElement(By.Id("identifierNext")).Click();
-                System.Threading.Thread.Sleep(1000);
+                while (Chrome.Url.Contains("/v2/sl/pwd")) ;
+                System.Threading.Thread.Sleep(2000);
                 Chrome.FindElement(By.Name("password")).SendKeys(Pass);
                 Chrome.FindElement(By.Id("passwordNext")).Click();
+                System.Threading.Thread.Sleep(2000);
+                while (Chrome.Url.Contains("myaccount.google.com")) ;
             }
             catch (Exception)
             {
