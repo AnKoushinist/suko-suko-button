@@ -1,0 +1,21 @@
+﻿<Window x:Class="SukoGUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SukoGUI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Button Content="実行" HorizontalAlignment="Center" Margin="205,228,10,0" VerticalAlignment="Top" Width="302" Height="67" FontSize="36" Click="Button_Click"/>
+        <TextBox x:Name="textbox" HorizontalAlignment="Left" Height="30" Margin="48,118,0,0" TextWrapping="Wrap" Text="UCaminwG9MTO4sLYeC3s6udA" VerticalAlignment="Top" Width="385" RenderTransformOrigin="0.64,-0.716" FontSize="20" TextChanged="TextBox_TextChanged"/>
+        <TextBlock HorizontalAlignment="Left" Margin="48,47,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="440" RenderTransformOrigin="-0.076,0.521" Height="71" FontSize="20"><Run Text="ヒカルさんを支援する場合、"/><LineBreak/><Run Text="下のテキストボックスは編集しないでください。"/></TextBlock>
+        <TextBox x:Name="text_acc" HorizontalAlignment="Left" Height="23" Margin="313,167,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="text_pass" HorizontalAlignment="Left" Height="23" Margin="313,200,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <TextBlock HorizontalAlignment="Left" Margin="193,167,0,0" TextWrapping="Wrap" Text="Googleのアカウント名" VerticalAlignment="Top" RenderTransformOrigin="0.986,1.508" Height="23"/>
+        <TextBlock HorizontalAlignment="Left" Margin="157,200,0,0" TextWrapping="Wrap" Text="Googleログイン用のパスワード" VerticalAlignment="Top" Width="141"/>
+        <TextBox x:Name="push_interval" HorizontalAlignment="Left" Height="23" Margin="10,260,0,0" TextWrapping="Wrap" Text="300" VerticalAlignment="Top" Width="120" TextChanged="TextBox_TextChanged_1" RenderTransformOrigin="0.504,-0.622"/>
+        <TextBlock HorizontalAlignment="Left" Margin="10,239,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="177" RenderTransformOrigin="0.512,2.246"><Run Text="もっとよみこむボタン"/><Run Text="を押す"/><Run Text="インターバル"/></TextBlock>
+
+    </Grid>
+</Window>
