@@ -92,6 +92,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="chromedriver.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Selenium.WebDriverBackedSelenium.dll" />
     <Content Include="WebDriver.dll" />
     <Content Include="WebDriver.Support.dll" />
