@@ -67,10 +67,10 @@ namespace SUKOAuto
             System.Threading.Thread.Sleep(2000);
 
             Console.WriteLine("動画探索中...");
-            string[] Movies = SukoSukoMachine.FindMovies(Chrome, Channel);
+            List<string> Movies = SukoSukoMachine.FindMovies(Chrome, Channel).ToList();
             foreach (string MovieID in Movies)
             {
-                Console.WriteLine(@"{0}すこ！", MovieID);
+                Console.WriteLine(@"{0}すこ！ ({1}/{2})", MovieID,Movies.IndexOf(MovieID),Movies.Count);
                 SukoSukoMachine.Suko(Chrome, MovieID);
             }
             Console.WriteLine("完了");
