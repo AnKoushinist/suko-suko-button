@@ -147,8 +147,8 @@ namespace SUKOAuto
             catch (Exception)
             {
                 Console.WriteLine("ログイン失敗: E-mailかパスワードの間違い");
+                throw;
             }
-
         }
 
         static string[] RegExp(string Content, string RegStr)
