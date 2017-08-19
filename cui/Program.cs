@@ -108,8 +108,17 @@ namespace SUKOAuto
                     {
                         foreach (string MovieID in LocalMovies)
                         {
-                            Console.WriteLine(@"スレッド{0}: {1}すこ！ ({2}/{3})", Number, MovieID, LocalMovies.IndexOf(MovieID), LocalMovies.Count);
-                            SukoSukoMachine.Suko(SingleChrome, MovieID);
+                            try
+                            {
+                                Console.WriteLine(@"スレッド{0}: {1}すこ！ ({2}/{3})", Number, MovieID, LocalMovies.IndexOf(MovieID), LocalMovies.Count);
+                                SukoSukoMachine.Suko(SingleChrome, MovieID);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine("スレッド{0}: {1} すこり失敗", Number, MovieID);
+                                Console.WriteLine(e.Message);
+                                Console.WriteLine(e.StackTrace);
+                            }
                         }
                         Console.WriteLine("スレッド{0}: 完了", Number);
                     }
