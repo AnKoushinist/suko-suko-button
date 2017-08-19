@@ -5,6 +5,7 @@ using System.Text;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
+using System.ComponentModel;
 
 namespace SUKOAuto
 {
@@ -63,44 +64,60 @@ namespace SUKOAuto
 
             var ChromeOptions = new ChromeOptions();
 
-            IWebDriver Chrome = new ChromeDriver(ChromeOptions);
+            List<IWebDriver> Chromes = new IWebDriver[3].Select(a => new ChromeDriver(ChromeOptions)).Cast<IWebDriver>().ToList();
+            IWebDriver Chrome = Chromes[0];
 
-            Console.WriteLine("ログイン中...");
-            SukoSukoMachine.Login(Chrome, Mail, Pass);
+            foreach (IWebDriver SingleChrome in Chromes)
+            {
+                Console.WriteLine("スレッド{0}: 順番にログイン中...",Chromes.IndexOf(SingleChrome));
+                SukoSukoMachine.Login(SingleChrome, Mail, Pass);
+            }
             System.Threading.Thread.Sleep(2000);
 
-            Console.WriteLine("動画探索中...");
-            List<string> Movies = SukoSukoMachine.FindMovies(Chrome, Channel).ToList();
-            foreach (string MovieID in Movies)
+            Console.WriteLine("スレッド0: 動画探索中...");
+            string[] Movies = SukoSukoMachine.FindMovies(Chrome, Channel);
+            List<string>[] MoviesEachThread = new List<string>[Chromes.Count].Select(a=> new List<string>()).ToArray();
+            for (int i=0; i<Movies.Length; i++)
             {
-                Console.WriteLine(@"{0}すこ！ ({1}/{2})", MovieID,Movies.IndexOf(MovieID),Movies.Count);
-                SukoSukoMachine.Suko(Chrome, MovieID);
+                MoviesEachThread[i % MoviesEachThread.Length].Add(Movies[i]);
             }
-            Console.WriteLine("完了");
-            Chrome.Dispose();
+
+            BackgroundWorker[] Threads = new BackgroundWorker[Chromes.Count].Select(a => new BackgroundWorker()).ToArray();
+            for (int i = 0; i < Threads.Length; i++)
+            {
+                int Number = i;
+                IWebDriver SingleChrome = Chromes[i];
+                List<string> LocalMovies=MoviesEachThread[i];
+                Threads[i].DoWork += (a, b) =>
+                {
+                    foreach (string MovieID in LocalMovies)
+                    {
+                        Console.WriteLine(@"スレッド{0}: {1}すこ！ ({2}/{3})", Number, MovieID, LocalMovies.IndexOf(MovieID), LocalMovies.Count);
+                        SukoSukoMachine.Suko(SingleChrome, MovieID);
+                    }
+                    Console.WriteLine("スレッド{0}: 完了", Number);
+                    SingleChrome.Dispose();
+                };
+                Threads[i].RunWorkerAsync();
+            }
+            while (Threads.Select(a=>a.IsBusy).Count()!=0) {
+                foreach (BackgroundWorker Thread in Threads) {
+                    while(Thread.IsBusy);
+                }
+            }
         }
     }
-
-
+    
     class SukoSukoMachine
     {
-        const string URL_LOGIN = @"https://accounts.google.com/ServiceLogin/identifier";
+        const string URL_LOGIN = @"https://accounts.google.com/ServiceLogin";
         const string URL_MOVIE = @"https://www.youtube.com/watch?v={0}";
         const string URL_CHANNEL = @"https://www.youtube.com/channel/{0}/videos";
 
         public static string[] FindMovies(IWebDriver Chrome, string Channel)
         {
             Chrome.Url = string.Format(URL_CHANNEL, Channel);
-            if (
-                Chrome.FindElements(By.CssSelector("span.yt-uix-button-content")).Count!=0&&
-                Chrome.FindElement(By.CssSelector("span.yt-uix-button-content")).Text=="ログイン"
-                ) {
-                // looks like we need to login again here
-                Console.WriteLine("再ログイン中...");
-                Chrome.FindElement(By.CssSelector("span.yt-uix-button-content")).Click();
-                System.Threading.Thread.Sleep(100);
-                Chrome.Url = string.Format(URL_CHANNEL, Channel);
-            }
+            ReLogin(Chrome, Chrome.Url);
 
             while (Chrome.PageSource.Contains("もっと読み込む"))
             {
@@ -119,6 +136,7 @@ namespace SUKOAuto
         {
             Chrome.Url = string.Format(URL_MOVIE, MovieID);
             System.Threading.Thread.Sleep(500);
+            ReLogin(Chrome, Chrome.Url);
 
             IWebElement SukoBtn = Chrome.FindElement(By.XPath("//button[@title = '低く評価']"));
             if (SukoBtn.GetCssValue("display")=="none") {
@@ -141,13 +159,14 @@ namespace SUKOAuto
             Chrome.Url = URL_LOGIN;
             try
             {
-                if (Chrome.Url==URL_LOGIN+"#identifier")
+                if (Chrome.Url== "https://accounts.google.com/ServiceLogin#identifier")
                 {
                     // old login screen
                     Chrome.FindElement(By.Id("Email")).SendKeys(Mail);
                     Chrome.FindElement(By.Id("next")).Click();
-                    while (!Chrome.Url.EndsWith("#password")) ;
+                    while (!Chrome.Url.Contains("#password")) ;
                     System.Threading.Thread.Sleep(2000);
+                    while (!Chrome.FindElement(By.Name("Passwd")).Displayed) ;
                     Chrome.FindElement(By.Name("Passwd")).SendKeys(Pass);
                     Chrome.FindElement(By.Id("signIn")).Click();
                 }
@@ -158,16 +177,30 @@ namespace SUKOAuto
                     Chrome.FindElement(By.Id("identifierNext")).Click();
                     while (!Chrome.Url.Contains("/v2/sl/pwd")) ;
                     System.Threading.Thread.Sleep(2000);
+                    while(!Chrome.FindElement(By.Name("password")).Displayed);
                     Chrome.FindElement(By.Name("password")).SendKeys(Pass);
                     Chrome.FindElement(By.Id("passwordNext")).Click();
                 }
-                System.Threading.Thread.Sleep(2000);
-                while (!Chrome.Url.Contains("myaccount.google.com")) ;
+                System.Threading.Thread.Sleep(3000);
             }
             catch (Exception)
             {
                 Console.WriteLine("ログイン失敗: E-mailかパスワードの間違い");
                 throw;
+            }
+        }
+
+        public static void ReLogin(IWebDriver Chrome,string ContinuationURL) {
+            if (
+               Chrome.FindElements(By.CssSelector("span.yt-uix-button-content")).Count != 0 &&
+               Chrome.FindElement(By.CssSelector("span.yt-uix-button-content")).Text == "ログイン"
+               )
+            {
+                // looks like we need to login again here
+                Console.WriteLine("再ログイン中...");
+                Chrome.FindElement(By.CssSelector("span.yt-uix-button-content")).Click();
+                System.Threading.Thread.Sleep(100);
+                Chrome.Url = ContinuationURL;
             }
         }
 
