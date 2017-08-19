@@ -16,6 +16,9 @@ namespace SUKOAuto
                 Console.WriteLine("エラー: [EMIAL] [PASSWORD] <CHANNEL ID>");
                 Console.WriteLine("We won't leak your private!");
                 Console.WriteLine("Source code: https://github.com/AnKoushinist/suko-suko-button/tree/master/cui");
+                Console.WriteLine("Original Author: Unnamed user in Nan-J");
+                Console.WriteLine("Modified by: AnKoushinist");
+                Console.WriteLine("Thanks: The holy Hatsune Daishi");
                 return;
             }
             string Mail = args[0];
