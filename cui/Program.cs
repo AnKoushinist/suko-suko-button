@@ -138,14 +138,28 @@ namespace SUKOAuto
             Chrome.Url = URL_LOGIN;
             try
             {
-                Chrome.FindElement(By.Id("identifierId")).SendKeys(Mail);
-                Chrome.FindElement(By.Id("identifierNext")).Click();
-                while (Chrome.Url.Contains("/v2/sl/pwd")) ;
+                if (Chrome.Url==URL_LOGIN+"#identifier")
+                {
+                    // old login screen
+                    Chrome.FindElement(By.Id("Email")).SendKeys(Mail);
+                    Chrome.FindElement(By.Id("next")).Click();
+                    while (!Chrome.Url.EndsWith("#password")) ;
+                    System.Threading.Thread.Sleep(2000);
+                    Chrome.FindElement(By.Name("Passwd")).SendKeys(Pass);
+                    Chrome.FindElement(By.Id("signIn")).Click();
+                }
+                else
+                {
+                    // new login screen
+                    Chrome.FindElement(By.Id("identifierId")).SendKeys(Mail);
+                    Chrome.FindElement(By.Id("identifierNext")).Click();
+                    while (!Chrome.Url.Contains("/v2/sl/pwd")) ;
+                    System.Threading.Thread.Sleep(2000);
+                    Chrome.FindElement(By.Name("password")).SendKeys(Pass);
+                    Chrome.FindElement(By.Id("passwordNext")).Click();
+                }
                 System.Threading.Thread.Sleep(2000);
-                Chrome.FindElement(By.Name("password")).SendKeys(Pass);
-                Chrome.FindElement(By.Id("passwordNext")).Click();
-                System.Threading.Thread.Sleep(2000);
-                while (Chrome.Url.Contains("myaccount.google.com")) ;
+                while (!Chrome.Url.Contains("myaccount.google.com")) ;
             }
             catch (Exception)
             {
