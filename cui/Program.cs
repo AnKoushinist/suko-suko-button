@@ -15,6 +15,14 @@ namespace SUKOAuto
         {
             if (args.Length<2) {
                 Console.WriteLine("エラー: [EMIAL] [PASSWORD] <CHANNEL ID>");
+                Console.WriteLine("コマンド: ");
+                Console.WriteLine("--first-10 : 最初の10個をすこる");
+                Console.WriteLine("--suko [N] : 最初のN個をすこる");
+                Console.WriteLine("--para [N] : N並列ですこる");
+                Console.WriteLine("コマンドはEMIAL、PASSWORD、CHANNEL IDのいずれかの間に入れても構わない。");
+                Console.WriteLine("極端例: example@suko.org --suko 10 sukosuko --para 100 UC...");
+                Console.WriteLine("推奨例: --suko 10 --para 100 example@suko.org sukosuko UC...");
+                Console.WriteLine(" ");
                 Console.WriteLine("We won't leak your private!");
                 Console.WriteLine("Source code: https://github.com/AnKoushinist/suko-suko-button/tree/master/cui");
                 Console.WriteLine("Original Author: Unnamed user in Nan-J");
@@ -22,6 +30,9 @@ namespace SUKOAuto
                 Console.WriteLine("Thanks: The holy Hatsune Daishi");
                 return;
             }
+            SukoSukoOption opt = new SukoSukoOption();
+            args = opt.LoadOpt(args);
+
             string Mail = args[0];
             string Pass = args[1];
 
@@ -64,18 +75,21 @@ namespace SUKOAuto
 
             var ChromeOptions = new ChromeOptions();
 
-            List<IWebDriver> Chromes = new IWebDriver[3].Select(a => new ChromeDriver(ChromeOptions)).Cast<IWebDriver>().ToList();
+            List<IWebDriver> Chromes = new IWebDriver[opt.parallel].Select(a => new ChromeDriver(ChromeOptions)).Cast<IWebDriver>().ToList();
             IWebDriver Chrome = Chromes[0];
 
             foreach (IWebDriver SingleChrome in Chromes)
             {
-                Console.WriteLine("スレッド{0}: 順番にログイン中...",Chromes.IndexOf(SingleChrome));
+                Console.WriteLine("スレッド{0}: 輪番ログイン中...",Chromes.IndexOf(SingleChrome));
                 SukoSukoMachine.Login(SingleChrome, Mail, Pass);
             }
             System.Threading.Thread.Sleep(2000);
 
             Console.WriteLine("スレッド0: 動画探索中...");
             string[] Movies = SukoSukoMachine.FindMovies(Chrome, Channel);
+            if (opt.maxSuko!=-1) {
+                Movies = Movies.Take(opt.maxSuko).ToArray();
+            }
             List<string>[] MoviesEachThread = new List<string>[Chromes.Count].Select(a=> new List<string>()).ToArray();
             for (int i=0; i<Movies.Length; i++)
             {
@@ -100,7 +114,7 @@ namespace SUKOAuto
                 };
                 Threads[i].RunWorkerAsync();
             }
-            while (Threads.Select(a=>a.IsBusy).Count()!=0) {
+            while (Threads.Where(a=>a.IsBusy).Count()!=0) {
                 foreach (BackgroundWorker Thread in Threads) {
                     while(Thread.IsBusy);
                 }
@@ -216,6 +230,35 @@ namespace SUKOAuto
             }
 
             return listResult.ToArray();
+        }
+    }
+
+
+    class SukoSukoOption {
+        public int parallel=3;
+        public int maxSuko=-1;
+
+        public string[] LoadOpt(string[] args) {
+            List<string> finalArgs = new List<string>();
+            for (int i=0; i<args.Length;i++) {
+                switch (args[i].ToLower()) {
+                    case "--first-10":
+                        maxSuko = 10;
+                        break;
+                    case "--suko":
+                        maxSuko = int.Parse(args[++i]);
+                        break;
+                    case "--parallel":
+                    case "--para":
+                    case "--heikou":
+                        maxSuko = int.Parse(args[++i]);
+                        break;
+                    default:
+                        finalArgs.Add(args[i]);
+                        break;
+                }
+            }
+            return finalArgs.ToArray();
         }
     }
 }
