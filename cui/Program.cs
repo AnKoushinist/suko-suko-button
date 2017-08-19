@@ -104,13 +104,26 @@ namespace SUKOAuto
                 List<string> LocalMovies=MoviesEachThread[i];
                 Threads[i].DoWork += (a, b) =>
                 {
-                    foreach (string MovieID in LocalMovies)
+                    try
                     {
-                        Console.WriteLine(@"スレッド{0}: {1}すこ！ ({2}/{3})", Number, MovieID, LocalMovies.IndexOf(MovieID), LocalMovies.Count);
-                        SukoSukoMachine.Suko(SingleChrome, MovieID);
+                        foreach (string MovieID in LocalMovies)
+                        {
+                            Console.WriteLine(@"スレッド{0}: {1}すこ！ ({2}/{3})", Number, MovieID, LocalMovies.IndexOf(MovieID), LocalMovies.Count);
+                            SukoSukoMachine.Suko(SingleChrome, MovieID);
+                        }
+                        Console.WriteLine("スレッド{0}: 完了", Number);
                     }
-                    Console.WriteLine("スレッド{0}: 完了", Number);
-                    SingleChrome.Dispose();
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("スレッド{0}: 異常終了", Number);
+                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.StackTrace);
+                    }
+                    finally
+                    {
+                        SingleChrome.Dispose();
+
+                    }
                 };
                 Threads[i].RunWorkerAsync();
             }
