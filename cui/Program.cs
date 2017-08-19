@@ -246,12 +246,14 @@ namespace SUKOAuto
                         maxSuko = 10;
                         break;
                     case "--suko":
-                        maxSuko = int.Parse(args[++i]);
+                        maxSuko = int.Parse(args[i+1]);
+                        i++;
                         break;
                     case "--parallel":
                     case "--para":
                     case "--heikou":
-                        maxSuko = int.Parse(args[++i]);
+                        parallel = int.Parse(args[i+1]);
+                        i++;
                         break;
                     default:
                         finalArgs.Add(args[i]);
