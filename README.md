@@ -1,3 +1,2 @@
 # suko-suko-button
-I don't maintain GUI version for speed.    
-Sorry.
+ここのすこすこ砲のWikiはこちら: https://github.com/AnKoushinist/suko-suko-button/wiki
